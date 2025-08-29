@@ -1,0 +1,5 @@
+[11-Jul-2025 22:59:56 UTC] PHP Warning:  require(/home/wasrim/public_html/admin.giftsaura.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/wasrim/public_html/admin.giftsaura.com/artisan on line 9
+[11-Jul-2025 22:59:56 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/wasrim/public_html/admin.giftsaura.com/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/wasrim/public_html/admin.giftsaura.com/artisan:9
+Stack trace:
+#0 {main}
+  thrown in /home/wasrim/public_html/admin.giftsaura.com/artisan on line 9
