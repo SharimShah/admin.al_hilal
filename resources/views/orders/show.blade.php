@@ -46,13 +46,13 @@
             </table>
         </div>
 
-        Custom Product Details
+        {{-- Custom Product Details --}}
         @php
             $customDetails = json_decode($order->custom_details, true);
         @endphp
 
         <h5 class="mt-5">Product Customization</h5>
-        {{-- @if (!empty($customDetails))
+        @if (!empty($customDetails))
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-sm mt-3 w-full" style="width:100%">
                     <thead class="table-light">
@@ -87,10 +87,6 @@
                                                     {{ $subValue }}<br>
                                                 @endforeach
                                             @else
-                                                @if ($key !== 'custom_images')
-                                                    <strong>{{ ucfirst(str_replace('_', ' ', $key)) }}:</strong>
-                                                    {{ $value }}<br>
-                                                @endif
                                             @endif
                                         @endforeach
                                     @else
@@ -105,7 +101,7 @@
             </div>
         @else
             <p class="text-muted">No customization details available.</p>
-        @endif --}}
+        @endif
         {{-- Back Button --}}
         <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary mt-4">← Back to Orders</a>
     </div>
