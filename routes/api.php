@@ -1,5 +1,5 @@
 <?php
-// api token "1|iWFr6ACtG9Qy9aLuP2hi3s4ouzWt651A5jri1nHsf988bd0d"
+// api token 1|GGOvmCfBZsziB0eetF9OJyEVoYQqIapjtQQmbYKnf957a04d
 use App\Http\Controllers\Api\HomeApiController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;

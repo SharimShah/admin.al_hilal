@@ -91,20 +91,20 @@ class ProductController extends Controller
             'parent_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'long_description' => 'nullable|string',
+            // 'long_description' => 'nullable|string',
             'slug' => 'nullable|string|max:255|unique:products,slug',
             'meta_description' => 'required|string|max:255',
             'meta_keywords' => 'required|string|max:255',
             'price' => 'required|numeric',
-            'discount_percentage' => 'nullable|numeric',
+            'cut_price' => 'nullable|numeric',
             'category_feature_p' => 'nullable|boolean',
-            'hidden' => 'nullable|boolean',
+            'stock' => 'nullable|boolean',
             'feature_product' => 'nullable|boolean',
             'active_product' => 'nullable|boolean',
-            'delivery_price' => 'nullable|boolean',
-            'youtube_url' => 'nullable|url',
+            // 'delivery_price' => 'nullable|boolean',
+            // 'youtube_url' => 'nullable|url',
             'cover_image' => 'required|image|mimes:jpg,png,jpeg,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpg,png,jpeg,webp|max:2048',
+            // 'gallery_images.*' => 'nullable|image|mimes:jpg,png,jpeg,webp|max:2048',
         ]);
 
         // Generate a unique slug if not provided
@@ -123,18 +123,18 @@ class ProductController extends Controller
             'category_id' => $request->parent_id,
             'name' => $request->name,
             'description' => $request->description,
-            'long_description' => $request->long_description,
+            // // 'long_description' => $request->long_description,
             'slug' => $slug,
             'meta_description' => $request->meta_description,
             'meta_keywords' => $request->meta_keywords,
             'price' => $request->price,
-            'discount_percentage' => $request->discount_percentage,
+            'cut_price' => $request->cut_price,
             'category_feature_p' => $request->has('category_feature_p'),
-            'hidden' => $request->has('hidden'),
+            'stock' => $request->has('stock'),
             // 'feature_product' => $request->has('feature_product'),
             'active_product' => $request->has('active_product'),
-            'delivery_price' => $request->has('delivery_price'),
-            'youtube_url' => $request->youtube_url,
+            // // 'delivery_price' => $request->has('delivery_price'),
+            // // 'youtube_url' => $request->youtube_url,
             'cover_image' => $coverImagePath,
             'created_at' => now(),
             'updated_at' => now(),
@@ -145,18 +145,44 @@ class ProductController extends Controller
                 'category_id' => $catId,
             ]);
         }
-        // Handle Gallery Images Upload
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $image) {
-                $imagePath = $this->uploadImage($image, 'products');
-                DB::table('images_gallery')->insert([
+        if ($request->addons) {
+            foreach ($request->addons as $addon) {
+                $addonId = DB::table('product_addons')->insertGetId([
                     'product_id' => $productId,
-                    'image_path' => $imagePath,
+                    'subcat_name' => $addon['subcat_name'],
+                    'multi_option' => $addon['multi_option'],
+                    'require_addons' => $addon['require_addons'] ?? 0,
+                    'sequence' => $addon['sequence'] ?? 0,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                if (!empty($addon['sub_item'])) {
+                    foreach ($addon['sub_item'] as $item) {
+                        DB::table('product_addon_items')->insert([
+                            'product_addon_id' => $addonId,
+                            'sub_item_name' => $item['sub_item_name'],
+                            'price' => $item['price'] ?? 0,
+                            'checked' => $item['checked'] ?? 0,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
             }
         }
+        // Handle Gallery Images Upload
+        // if ($request->hasFile('gallery_images')) {
+        //     foreach ($request->file('gallery_images') as $image) {
+        //         $imagePath = $this->uploadImage($image, 'products');
+        //         DB::table('images_gallery')->insert([
+        //             'product_id' => $productId,
+        //             'image_path' => $imagePath,
+        //             'created_at' => now(),
+        //             'updated_at' => now(),
+        //         ]);
+        //     }
+        // }
         return redirect()->route('products.index')->with('success', 'Product created successfully!');
     }
     // Show Edit Form
@@ -178,17 +204,26 @@ class ProductController extends Controller
             ->pluck('category_id')
             ->toArray();
 
-        $galleryImages = DB::table('images_gallery')->where('product_id', $id)->get();
+        // $galleryImages = DB::table('images_gallery')->where('product_id', $id)->get();
         // Get the currently selected form's fields
         $categories = $this->buildCategoryTree($this->categories);
         $allcategories = $this->categories;
+
+        $addons = DB::table('product_addons')->where('product_id', $id)->get();
+
+        foreach ($addons as $addon) {
+            $addon->sub_item = DB::table('product_addon_items')
+                ->where('product_addon_id', $addon->id)->get();
+        }
+
         return view('products.form', compact(
             'products',
             'selectedCategoryIds',
             'selectedCategory',
             'categories',
             'allcategories',
-            'galleryImages',
+            'addons'
+            // 'galleryImages',
         ));
     }
 
@@ -199,20 +234,20 @@ class ProductController extends Controller
             'parent_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'long_description' => 'nullable|string',
+            // 'long_description' => 'nullable|string',
             'slug' => 'nullable|string|max:255|unique:products,slug,' . $id,
             'meta_description' => 'required|string|max:255',
             'meta_keywords' => 'required|string|max:255',
             'price' => 'required|numeric',
-            'discount_percentage' => 'nullable|numeric',
+            'cut_price' => 'nullable|numeric',
             'category_feature_p' => 'nullable|boolean',
-            'hidden' => 'nullable|boolean',
+            'stock' => 'nullable|boolean',
             'feature_product' => 'nullable|boolean',
             'active_product' => 'nullable|boolean',
-            'delivery_price' => 'nullable|boolean',
-            'youtube_url' => 'nullable|url',
+            // 'delivery_price' => 'nullable|boolean',
+            // 'youtube_url' => 'nullable|url',
             'cover_image' => 'nullable|image|mimes:jpg,png,jpeg,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpg,png,jpeg,webp|max:2048',
+            // 'gallery_images.*' => 'nullable|image|mimes:jpg,png,jpeg,webp|max:2048',
         ]);
         $product = DB::table('products')
             ->where('id', $id)
@@ -238,18 +273,18 @@ class ProductController extends Controller
             'category_id' => $request->parent_id,
             'name' => $request->name,
             'description' => $request->description,
-            'long_description' => $request->long_description,
+            // // 'long_description' => $request->long_description,
             'slug' => $slug,
             'meta_description' => $request->meta_description,
             'meta_keywords' => $request->meta_keywords,
             'price' => $request->price,
-            'discount_percentage' => $request->discount_percentage,
-            'youtube_url' => $request->youtube_url,
+            'cut_price' => $request->cut_price,
+            // // 'youtube_url' => $request->youtube_url,
             'feature_product' => $request->has('feature_product') ? 1 : 0,
             'category_feature_p' => $request->has('category_feature_p') ? 1 : 0,
-            'hidden' => $request->has('hidden') ? 1 : 0,
+            'stock' => $request->has('stock') ? 1 : 0,
             'active_product' => $request->has('active_product') ? 1 : 0,
-            'delivery_price' => $request->has('delivery_price') ? 1 : 0,
+            // // 'delivery_price' => $request->has('delivery_price') ? 1 : 0,
             'updated_at' => now(),
         ];
         DB::table('category_product')->where('product_id', $product->id)->delete();
@@ -271,12 +306,37 @@ class ProductController extends Controller
         DB::table('products')->where('id', $id)->update($updateData);
 
         // Handle Gallery Images Upload
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $image) {
-                $imagePath = $this->uploadImage($image, 'products');
-                DB::table('images_gallery')->insert([
-                    'product_id' => $id,
-                    'image_path' => $imagePath,
+        // if ($request->hasFile('gallery_images')) {
+        //     foreach ($request->file('gallery_images') as $image) {
+        //         $imagePath = $this->uploadImage($image, 'products');
+        //         DB::table('images_gallery')->insert([
+        //             'product_id' => $id,
+        //             'image_path' => $imagePath,
+        //             'created_at' => now(),
+        //             'updated_at' => now(),
+        //         ]);
+        //     }
+        // }
+        // delete old addons & reinsert
+        DB::table('product_addons')->where('product_id', $id)->delete();
+
+        foreach ($request->addons ?? [] as $addon) {
+            $addonId = DB::table('product_addons')->insertGetId([
+                'product_id' => $id,
+                'subcat_name' => $addon['subcat_name'] ?? '',  // ✅ safe access
+                'multi_option' => $addon['multi_option'] ?? 'one',
+                'require_addons' => $addon['require_addons'] ?? 0,
+                'sequence' => $addon['sequence'] ?? 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            foreach ($addon['sub_item'] ?? [] as $item) {
+                DB::table('product_addon_items')->insert([
+                    'product_addon_id' => $addonId,
+                    'sub_item_name' => $item['sub_item_name'] ?? '',
+                    'price' => $item['price'] ?? 0,
+                    'checked' => $item['checked'] ?? 0,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -303,11 +363,11 @@ class ProductController extends Controller
     public function destroy($id)
     {
         // Delete gallery images
-        $galleryImages = DB::table('images_gallery')->where('product_id', $id)->get();
-        foreach ($galleryImages as $image) {
-            File::delete(public_path($image->image_path));
-        }
-        DB::table('images_gallery')->where('product_id', $id)->delete();
+        // $galleryImages = DB::table('images_gallery')->where('product_id', $id)->get();
+        // foreach ($galleryImages as $image) {
+        //     File::delete(public_path($image->image_path));
+        // }
+        // DB::table('images_gallery')->where('product_id', $id)->delete();
 
         // Delete product cover image
         $product = DB::table('products')->where('id', $id)->first();
@@ -315,6 +375,7 @@ class ProductController extends Controller
 
         // Delete product
         DB::table('products')->where('id', $id)->delete();
+
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
     }

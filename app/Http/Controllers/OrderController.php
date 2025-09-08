@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
@@ -23,12 +22,8 @@ class OrderController extends Controller
     {
         if ($request->ajax()) {
             $data = DB::table('orders')->latest()->select('*');
-
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('image', function ($data) {
-                    return $data->image ? '<img src="' . asset($data->image) . '" width="50" height="50" class="img-thumbnail"/>' : 'No Image';
-                })
                 ->addColumn('action', function ($data) {
                     return '
                         <a href="' . route('orders.show', $data->id) . '" class="btn btn-info">View</a>
@@ -82,12 +77,6 @@ class OrderController extends Controller
 
     public function destroy($id)
     {
-        $order = DB::table('orders')->where('id', $id)->first();
-
-        if ($order && $order->image) {
-            File::delete(public_path($order->image));
-        }
-
         DB::table('orders')->where('id', $id)->delete();
         return redirect()->route('orders.index')->with('success', 'Order deleted successfully');
     }

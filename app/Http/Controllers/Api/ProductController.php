@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -24,38 +23,44 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Convert cover image to full URL
+        // Format product fields
         $product->cover_image = url($product->cover_image);
         $product->price = number_format($product->price, 0, '.', ',');
-        $product->discount_percentage = number_format($product->discount_percentage, 0, '.', ',');
-        // Fetch product gallery images
-        $galleryImages = DB::table('images_gallery')
-            ->where('product_id', $product->id)
-            ->get()
-            ->map(function ($image) {
-                $image->image_path = url($image->image_path); // Convert to full URL
-                return $image;
-            })
-            ->pluck('image_path')
-            ->toArray();
+        $product->cut_price = number_format($product->cut_price, 0, '.', ',');
 
-        // Insert cover image at index 0
-        array_unshift($galleryImages, $product->cover_image);
-        $product->gallery_images = $galleryImages;
+        // 🔹 Fetch addons
+        $addons = DB::table('product_addons')
+            ->where('product_id', $product->id)
+            ->orderBy('sequence')
+            ->get()
+            ->map(function ($addon) {
+                $items = DB::table('product_addon_items')
+                    ->where('product_addon_id', $addon->id)
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'sub_item_id' => (string) $item->id,
+                            'sub_item_name' => $item->sub_item_name,
+                            'price' => (float) $item->price,
+                            'checked' => (bool) $item->checked,
+                        ];
+                    });
+
+                return [
+                    'subcat_id' => (string) $addon->id,
+                    'sequence' => $addon->sequence,
+                    'subcat_name' => $addon->subcat_name,
+                    'multi_option' => $addon->multi_option,
+                    'require_addons' => (bool) $addon->require_addons,
+                    'sub_item' => $items,
+                ];
+            });
+
+        $product->addons = $addons;
 
         return response()->json([
             'success' => true,
             'product' => $product,
         ]);
-    }
-    private function getParentCategories($categories, $category, &$parents = [])
-    {
-        foreach ($categories as $cat) {
-            if ($cat->id == $category->parent_id) {
-                $parents[] = $cat;
-                $this->getParentCategories($categories, $cat, $parents);
-            }
-        }
-        return $parents;
     }
 }

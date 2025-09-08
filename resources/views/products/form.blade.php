@@ -82,7 +82,7 @@
                         </fieldset>
                     </div>
                     <fieldset class="shortdescription">
-                        <div class="body-title mb-10">Short Description <span class="tf-color-1">*</span></div>
+                        <div class="body-title mb-10">Description <span class="tf-color-1">*</span></div>
                         <textarea class="mb-10 ht-150" name="description" id="description" placeholder="Short Description">{{ old('description', $products->description ?? '') }}</textarea>
                         @error('description')
                             <span class="text-danger">{{ $message }}</span>
@@ -90,14 +90,14 @@
                         <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
                     </fieldset>
 
-                    <fieldset class="description">
+                    {{-- <fieldset class="description">
                         <div class="body-title mb-10">Description <span class="tf-color-1">*</span></div>
                         <textarea class="form-control" id="long_description" placeholder="Enter the Description" name="long_description">{{ old('long_description', $products->long_description ?? '') }}</textarea>
                         @error('long_description')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                         <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
-                    </fieldset>
+                    </fieldset> --}}
                     <fieldset class="name">
                         <div class="body-title">Select Categories:</div>
                         <div class="container">
@@ -147,7 +147,7 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset>
+                    {{-- <fieldset>
                         <div class="body-title mb-10">Upload Gallery Images</div>
                         <div class="upload-image mb-16">
                             <div id="galleryPreview" class="d-flex flex-wrap">
@@ -184,7 +184,7 @@
                                 </label>
                             </div>
                         </div>
-                    </fieldset>
+                    </fieldset> --}}
 
 
                     <div class="cols gap22">
@@ -198,17 +198,16 @@
                             @enderror
                         </fieldset>
                         <fieldset class="name">
-                            <div class="body-title mb-10">Discount Price <span class="tf-color-1">*</span></div>
-                            <input class="mb-10" type="number" placeholder="Enter Discount Price"
-                                name="discount_percentage" tabindex="0"
-                                value="{{ old('discount_percentage', $products->discount_percentage ?? '') }}"
+                            <div class="body-title mb-10">Cut Price <span class="tf-color-1">*</span></div>
+                            <input class="mb-10" type="number" placeholder="Enter Discount Price" name="cut_price"
+                                tabindex="0" value="{{ old('cut_price', $products->cut_price ?? '') }}"
                                 aria-required="true">
-                            @error('discount_percentage')
+                            @error('cut_price')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </fieldset>
                     </div>
-                    <div class="cols gap22">
+                    {{-- <div class="cols gap22">
                         <fieldset class="name">
                             <div class="body-title mb-10">Youtube Url<span class="tf-color-1">*</span></div>
                             <input class="mb-10" type="url" placeholder="Enter Youtube Url" name="youtube_url"
@@ -217,7 +216,7 @@
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </fieldset>
-                    </div>
+                    </div> --}}
                     <fieldset class="name">
                         <div class="body-title mb-10">Meta keywords<span class="tf-color-1">*</span></div>
                         <input class="mb-10" type="text" placeholder="Enter Meta keywords" name="meta_keywords"
@@ -237,11 +236,112 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </fieldset>
+                    {{-- Addons Section --}}
+
+                    {{-- Addons --}}
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Addons</h5>
+                            <button type="button" class="btn btn-sm btn-success" onclick="addAddon()">+ Add
+                                Addon</button>
+                        </div>
+                        <div class="card-body" id="addons-wrapper">
+                            @if (!empty($addons))
+                                @foreach ($addons as $aIndex => $addon)
+                                    <div class="addon border rounded p-3 mb-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">Addon</h6>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="removeAddon(this)">Remove</button>
+                                        </div>
+
+                                        <input type="hidden" name="addons[{{ $aIndex }}][id]"
+                                            value="{{ $addon->id }}">
+
+                                        <div class="mb-2">
+                                            <label class="form-label">Addon Name</label>
+                                            <input type="text" name="addons[{{ $aIndex }}][subcat_name]"
+                                                class="form-control"
+                                                value="{{ old('addons.' . $aIndex . '.subcat_name', $addon->subcat_name) }}">
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label">Multi Option</label>
+                                            <select name="addons[{{ $aIndex }}][multi_option]" class="form-select">
+                                                <option value="one"
+                                                    {{ $addon->multi_option == 'one' ? 'selected' : '' }}>One</option>
+                                                <option value="multi"
+                                                    {{ $addon->multi_option == 'multi' ? 'selected' : '' }}>Multi</option>
+                                                <option value="custom"
+                                                    {{ $addon->multi_option == 'custom' ? 'selected' : '' }}>Custom
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Sequence</label>
+                                                <input type="number" name="addons[{{ $aIndex }}][sequence]"
+                                                    class="form-control"
+                                                    value="{{ old('addons.' . $aIndex . '.sequence', $addon->sequence) }}">
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-center">
+                                                <div class="form-check mt-4">
+                                                    <input type="checkbox"
+                                                        name="addons[{{ $aIndex }}][require_addons]" value="1"
+                                                        class="form-check-input"
+                                                        {{ $addon->require_addons ? 'checked' : '' }}>
+                                                    <label class="form-check-label">Required</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="items-wrapper mt-3">
+                                            @foreach ($addon->sub_item as $iIndex => $item)
+                                                <div class="item row g-2 align-items-center mb-2">
+                                                    <input type="hidden"
+                                                        name="addons[{{ $aIndex }}][sub_item][{{ $iIndex }}][id]"
+                                                        value="{{ $item->id }}">
+
+                                                    <div class="col-md-5">
+                                                        <input type="text"
+                                                            name="addons[{{ $aIndex }}][sub_item][{{ $iIndex }}][sub_item_name]"
+                                                            class="form-control" placeholder="Item Name"
+                                                            value="{{ old('addons.' . $aIndex . '.sub_item.' . $iIndex . '.sub_item_name', $item->sub_item_name) }}">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="number"
+                                                            name="addons[{{ $aIndex }}][sub_item][{{ $iIndex }}][price]"
+                                                            class="form-control" placeholder="Price"
+                                                            value="{{ old('addons.' . $aIndex . '.sub_item.' . $iIndex . '.price', $item->price) }}">
+                                                    </div>
+                                                    <div class="col-md-2 text-center">
+                                                        <input type="checkbox"
+                                                            name="addons[{{ $aIndex }}][sub_item][{{ $iIndex }}][checked]"
+                                                            value="1" class="form-check-input"
+                                                            {{ $item->checked ? 'checked' : '' }}>
+                                                        <label class="form-check-label">Default</label>
+                                                    </div>
+                                                    <div class="col-md-1 text-end">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="removeItem(this)">X</button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        <button type="button" class="btn btn-sm btn-outline-success mt-2"
+                                            onclick="addItem(this)">+ Add Item</button>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
                     <div class="cols gap22">
                         <fieldset class="name">
                             <div class="body-title">Free Delivery:</div>
-                            <input type="checkbox" name="delivery_price" value="1"
-                                {{ isset($products) && $products->delivery_price ? 'checked' : '' }}>
+                            <input type="checkbox" name="free_delivery" value="1"
+                                {{ isset($products) && $products->free_delivery ? 'checked' : '' }}>
                         </fieldset>
                         <fieldset class="name">
                             <div class="body-title">Feature Product:</div>
@@ -250,8 +350,8 @@
                         </fieldset>
                         <fieldset class="name">
                             <div class="body-title">Out Of Stock:</div>
-                            <input type="checkbox" name="hidden" value="1"
-                                {{ isset($products) && $products->hidden ? 'checked' : '' }}>
+                            <input type="checkbox" name="stock" value="1"
+                                {{ isset($products) && $products->stock ? 'checked' : '' }}>
                         </fieldset>
                         <fieldset class="name">
                             <div class="body-title">Active Product:</div>
@@ -268,6 +368,109 @@
         </div>
         <!-- /main-content-wrap -->
     </div>
+    {{-- Templates (same as before) --}}
+    <template id="addon-template">
+        <div class="addon border rounded p-3 mb-3 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Addon</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAddon(this)">Remove</button>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Addon Name</label>
+                <input type="text" name="addons[__INDEX__][subcat_name]" class="form-control">
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Multi Option</label>
+                <select name="addons[__INDEX__][multi_option]" class="form-select">
+                    <option value="one">One</option>
+                    <option value="multi">Multi</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Sequence</label>
+                    <input type="number" name="addons[__INDEX__][sequence]" class="form-control" value="0">
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        <input type="checkbox" name="addons[__INDEX__][require_addons]" value="1"
+                            class="form-check-input">
+                        <label class="form-check-label">Required</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-wrapper mt-3"></div>
+            <button type="button" class="btn btn-sm btn-outline-success mt-2" onclick="addItem(this)">+ Add
+                Item</button>
+        </div>
+    </template>
+
+    <template id="item-template">
+        <div class="item row g-2 align-items-center mb-2">
+            <div class="col-md-5">
+                <input type="text" name="addons[__A_INDEX__][sub_item][__I_INDEX__][sub_item_name]"
+                    placeholder="Item Name" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <input type="number" name="addons[__A_INDEX__][sub_item][__I_INDEX__][price]" placeholder="Price"
+                    class="form-control">
+            </div>
+            <div class="col-md-2 text-center">
+                <input type="checkbox" name="addons[__A_INDEX__][sub_item][__I_INDEX__][checked]" value="1"
+                    class="form-check-input">
+                <label class="form-check-label">Default</label>
+            </div>
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">X</button>
+            </div>
+        </div>
+    </template>
+    <style>
+        .addon {
+            position: relative;
+        }
+
+        .addon h6 {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .items-wrapper {
+            border-left: 3px solid #0d6efd;
+            padding-left: 10px;
+        }
+    </style>
+    <script>
+        let addonIndex = 0;
+
+        function addAddon() {
+            const template = document.querySelector('#addon-template').innerHTML;
+            let html = template.replace(/__INDEX__/g, addonIndex);
+            document.querySelector('#addons-wrapper').insertAdjacentHTML('beforeend', html);
+            addonIndex++;
+        }
+
+        function removeAddon(button) {
+            button.closest('.addon').remove();
+        }
+
+        function addItem(button) {
+            const addonDiv = button.closest('.addon');
+            const itemsWrapper = addonDiv.querySelector('.items-wrapper');
+            const addonIdx = Array.from(document.querySelectorAll('#addons-wrapper .addon')).indexOf(addonDiv);
+
+            let itemIndex = itemsWrapper.querySelectorAll('.item').length;
+            const template = document.querySelector('#item-template').innerHTML;
+            let html = template.replace(/__A_INDEX__/g, addonIdx).replace(/__I_INDEX__/g, itemIndex);
+            itemsWrapper.insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeItem(button) {
+            button.closest('.item').remove();
+        }
+    </script>
     <script>
         function previewFile() {
             var preview = document.getElementById('previewImage');

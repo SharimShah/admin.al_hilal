@@ -80,7 +80,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Image</th>
+                                {{-- <th>Image</th> --}}
                                 <th>Name</th>
                                 <th>Slug</th>
                                 <th>Active Category</th>
@@ -108,10 +108,10 @@
                         data: 'id',
                         name: 'id'
                     },
-                    {
-                        data: 'image',
-                        name: 'image'
-                    },
+                    // {
+                    //     data: 'image',
+                    //     name: 'image'
+                    // },
                     {
                         data: 'name',
                         name: 'name'

@@ -83,7 +83,7 @@
                         @enderror
                     </fieldset>
 
-                    <fieldset class="name">
+                    {{-- <fieldset class="name">
                         <div class="body-title">Image Name <span class="text-danger">Optional</span> <span
                                 class="tf-color-1">*</span>
                         </div>
@@ -158,7 +158,7 @@
                         @error('image')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                    </fieldset>
+                    </fieldset> --}}
 
                     <fieldset class="name">
                         <div class="body-title">Show on Menu:</div>
@@ -178,8 +178,7 @@
                             {{ isset($category) && $category->active_categorie ? 'checked' : 'checked' }}>
                     </fieldset>
                     <div class="bot">
-                        <button class="tf-button w208"
-                            type="submit">{{ isset($category) ? 'Update' : 'Create' }}</button>
+                        <button class="tf-button w208" type="submit">{{ isset($category) ? 'Update' : 'Create' }}</button>
                     </div>
                 </form>
 
