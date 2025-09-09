@@ -128,7 +128,7 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </fieldset>
-
+ --}}
                     <fieldset>
                         <div class="body-title">Upload images <span class="tf-color-1">*</span></div>
                         <div class="upload-image flex-grow">
@@ -158,7 +158,7 @@
                         @error('image')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                    </fieldset> --}}
+                    </fieldset>
 
                     <fieldset class="name">
                         <div class="body-title">Show on Menu:</div>

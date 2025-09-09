@@ -51,7 +51,7 @@
             $customDetails = json_decode($order->custom_details, true);
         @endphp
 
-        <h5 class="mt-5">Product Customization</h5>
+        <h5 class="mt-5">Product Details</h5>
         @if (!empty($customDetails))
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-sm mt-3 w-full" style="width:100%">
@@ -79,14 +79,26 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if (!empty($item['variations']))
-                                        @foreach ($item['variations'] as $key => $value)
-                                            @if (is_array($value))
-                                                @foreach ($value as $subKey => $subValue)
-                                                    <strong>{{ ucfirst(str_replace('_', ' ', $subKey)) }}:</strong>
-                                                    {{ $subValue }}<br>
+                                    @if (!empty($item['variations']['fields']))
+                                        @foreach ($item['variations']['fields'] as $fieldKey => $fieldValue)
+                                            <strong>{{ ucfirst(str_replace('_', ' ', $fieldKey)) }}:</strong><br>
+
+                                            @if (is_array($fieldValue))
+                                                @foreach ($fieldValue as $addonId)
+                                                    @if (isset($addons[$addonId]))
+                                                        {{ $addons[$addonId]->sub_item_name }} -
+                                                        AED: {{ number_format($addons[$addonId]->price, 2) }}<br>
+                                                    @else
+                                                        {{ $addonId }} (Not Found)<br>
+                                                    @endif
                                                 @endforeach
                                             @else
+                                                @if (isset($addons[$fieldValue]))
+                                                    {{ $addons[$fieldValue]->sub_item_name }} -
+                                                    AED: {{ number_format($addons[$fieldValue]->price, 2) }}<br>
+                                                @else
+                                                    {{ $fieldValue }} (Not Found)<br>
+                                                @endif
                                             @endif
                                         @endforeach
                                     @else

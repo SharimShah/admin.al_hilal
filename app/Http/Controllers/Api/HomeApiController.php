@@ -21,8 +21,13 @@ class HomeApiController extends Controller
         $HsortPro = DB::table('categories')
             ->where('active_categorie', 1)
             ->orderBy('hp_sort_order', 'asc')
-            ->select('id', 'name', 'slug')
-            ->get();
+            ->select('id', 'name', 'slug', 'image')
+            ->get()
+            ->map(function ($HsortPro) {
+                $HsortPro->image = !empty($HsortPro->image) ? url($HsortPro->image) : null;
+                return $HsortPro;
+            });
+
 
         // Step 2: Attach up to 4 products per category
         $HsortPro = $HsortPro->map(function ($category) {

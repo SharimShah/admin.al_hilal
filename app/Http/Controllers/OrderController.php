@@ -43,19 +43,35 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = DB::table('orders')->where('id', $id)->first();
-        // dd($order);
-        $customDetails = json_decode($order->custom_details, true); // Decode JSON to array
-        // Get all product IDs from customDetails
+        $customDetails = json_decode($order->custom_details, true);
+
+        // Get product IDs
         $product_ids = collect($customDetails)->pluck('id')->toArray();
 
-        // Fetch slugs and product names from the products table
+        // Get product slugs
         $product_links = DB::table('products')
             ->whereIn('id', $product_ids)
-            ->pluck('slug', 'id')  // returns [id => slug]
+            ->pluck('slug', 'id')
             ->toArray();
 
-        return view('orders.show', compact('order', 'product_links'));
+        // Collect all addon IDs from customDetails
+        $addon_ids = collect($customDetails)->flatMap(function ($item) {
+            return collect($item['variations']['fields'] ?? [])
+                ->flatten()
+                ->filter(function ($v) {
+                    return is_numeric($v); // keep only valid IDs
+                });
+        })->toArray();
+
+        // Fetch addons (id => [sub_item_name, price])
+        $addons = DB::table('product_addon_items')
+            ->whereIn('id', $addon_ids)
+            ->get()
+            ->keyBy('id');
+
+        return view('orders.show', compact('order', 'customDetails', 'product_links', 'addons'));
     }
+
 
     public function edit($id)
     {

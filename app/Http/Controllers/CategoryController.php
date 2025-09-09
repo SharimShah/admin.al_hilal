@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-// use Illuminate\Support\Facades\File;
-// use Intervention\Image\Encoders\WebpEncoder;
+use Illuminate\Support\Facades\File;
+use Intervention\Image\Encoders\WebpEncoder;
 use Yajra\DataTables\Facades\DataTables;
-// use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\Laravel\Facades\Image;
 
 class CategoryController extends Controller
 {
@@ -65,11 +65,11 @@ class CategoryController extends Controller
 
             return DataTables::of($data)
                 ->addIndexColumn()
-                // ->addColumn('image', function ($data) {
-                //     $imgPath = $data->image ? url($data->image) : url('images/appimg/noimg.jpeg');
-                //     $img = '<img src="' . $imgPath . '" onerror="this.onerror=null;this.src=\'' . url('images/appimg/noimg.jpeg') . '\';" width="50" height="50" class="img-rounded" align="center" />';
-                //     return $img;
-                // })
+                ->addColumn('image', function ($data) {
+                    $imgPath = $data->image ? url($data->image) : url('images/appimg/noimg.jpeg');
+                    $img = '<img src="' . $imgPath . '" onerror="this.onerror=null;this.src=\'' . url('images/appimg/noimg.jpeg') . '\';" width="50" height="50" class="img-rounded" align="center" />';
+                    return $img;
+                })
                 ->addColumn('action', function ($data) {
                     $edit = '<a href="' . route('categories.edit', [$data->id]) . '" class="edit btn btn-success">  
                 <div class="item edit">
@@ -86,8 +86,8 @@ class CategoryController extends Controller
 
                     return $edit . ' ' . $delete;
                 })
-                // ->rawColumns(['action', 'image'])
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'image'])
+                // ->rawColumns(['action'])
                 ->make(true);
         }
     }
@@ -104,15 +104,15 @@ class CategoryController extends Controller
             'show_on_menu' => 'nullable|boolean',
             'feature_categorie' => 'nullable|boolean',
             'active_categorie' => 'nullable|boolean',
-            // 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             // 'image_name' => 'nullable|string|max:255',
         ]);
         // Handle Image Upload
-        // $imagePath = null;
+        $imagePath = null;
 
-        // if ($request->hasFile('image')) {
-        //     $imagePath = $this->uploadImage($request->file('image'), 'category');
-        // }
+        if ($request->hasFile('image')) {
+            $imagePath = $this->uploadImage($request->file('image'), 'category');
+        }
         // Generate a unique slug
         $slug = $request->input('slug') ?? Str::slug($request->input('name'));
         $originalSlug = $slug;
@@ -126,7 +126,7 @@ class CategoryController extends Controller
             'name' => $request->input('name'),
             'parent_id' => $request->input('parent_id'),
             // 'description_long' => $request->input('description_long'),
-            // 'image' => $imagePath,
+            'image' => $imagePath,
             // 'image_name' => $request->input('image_name'),
             'slug' => $slug,
             // 'meta_title' => $request->input('meta_title'),
@@ -153,22 +153,22 @@ class CategoryController extends Controller
             'show_on_menu' => 'nullable|boolean',
             'feature_categorie' => 'nullable|boolean',
             'active_categorie' => 'nullable|boolean',
-            // 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             // 'image_name' => 'nullable|string|max:255',
         ]);
 
         // Fetch the existing category
-        // $category = DB::table('categories')->where('id', $id)->first();
-        // $imagePath = $category->image;
-        // if ($request->hasFile('image')) {
-        //     // Delete old image if exists
-        //     if ($imagePath) {
-        //         File::delete(public_path($imagePath));
-        //     }
+        $category = DB::table('categories')->where('id', $id)->first();
+        $imagePath = $category->image;
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($imagePath) {
+                File::delete(public_path($imagePath));
+            }
 
-        //     // Upload new image
-        //     $imagePath = $this->uploadImage($request->file('image'), 'category');
-        // }
+            // Upload new image
+            $imagePath = $this->uploadImage($request->file('image'), 'category');
+        }
         // Slug handling
         $slug = $request->input('slug') ?? Str::slug($request->input('name'));
         $originalSlug = $slug;
@@ -183,7 +183,7 @@ class CategoryController extends Controller
             ->update([
                 'name' => $request->input('name'),
                 // 'description_long' => $request->input('description_long'),
-                // 'image' => $imagePath,
+                'image' => $imagePath,
                 // 'image_name' => $request->input('image_name'),
                 'slug' => $slug,
                 // 'meta_title' => $request->input('meta_title'),
@@ -200,10 +200,10 @@ class CategoryController extends Controller
     // Delete a category
     public function destroy($id)
     {
-        // $category = DB::table('categories')->where('id', $id)->first();
-        // if ($category && $category->image) {
-        //     File::delete(public_path($category->image));
-        // }
+        $category = DB::table('categories')->where('id', $id)->first();
+        if ($category && $category->image) {
+            File::delete(public_path($category->image));
+        }
         DB::table('categories')->where('id', $id)->delete();
         return redirect()->route('categories.index')->with('success', 'Category deleted successfully!');
     }
@@ -247,30 +247,30 @@ class CategoryController extends Controller
         return response()->json(['success' => true, 'message' => 'Order updated successfully']);
     }
 
-    // private function uploadImage($image, $folder)
-    // {
-    //     $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
-    //     $extension = $image->getClientOriginalExtension(); // keep original extension
-    //     $seoName = Str::slug($originalName); // SEO-friendly name
-    //     $folderPath = public_path("images/$folder/");
+    private function uploadImage($image, $folder)
+    {
+        $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $image->getClientOriginalExtension(); // keep original extension
+        $seoName = Str::slug($originalName); // SEO-friendly name
+        $folderPath = public_path("images/$folder/");
 
-    //     // Ensure the directory exists
-    //     if (!File::exists($folderPath)) {
-    //         File::makeDirectory($folderPath, 0755, true, true);
-    //     }
+        // Ensure the directory exists
+        if (!File::exists($folderPath)) {
+            File::makeDirectory($folderPath, 0755, true, true);
+        }
 
-    //     // Ensure unique filename
-    //     $fileIndex = 1;
-    //     $fileName = $seoName . '.' . $extension;
-    //     while (File::exists($folderPath . $fileName)) {
-    //         $fileIndex++;
-    //         $fileName = $seoName . '-' . $fileIndex . '.' . $extension;
-    //     }
+        // Ensure unique filename
+        $fileIndex = 1;
+        $fileName = $seoName . '.' . $extension;
+        while (File::exists($folderPath . $fileName)) {
+            $fileIndex++;
+            $fileName = $seoName . '-' . $fileIndex . '.' . $extension;
+        }
 
-    //     // Move the uploaded file as-is
-    //     $image->move($folderPath, $fileName);
+        // Move the uploaded file as-is
+        $image->move($folderPath, $fileName);
 
-    //     // Return the relative path
-    //     return "images/$folder/" . $fileName;
-    // }
+        // Return the relative path
+        return "images/$folder/" . $fileName;
+    }
 }
