@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->boolean('show_on_menu')->default(true);
             $table->boolean('feature_categorie')->default(true);
             $table->boolean('active_categorie')->default(true);
